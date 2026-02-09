@@ -1,0 +1,207 @@
+<!--
+Metrônomo Progressivo
+Version: v1.2.1-fix-scheduler-timeunit
+-->
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Metrônomo Progressivo</title>
+
+<style>
+:root{
+  --accent:#EE9B19;
+  --bg:#000;
+  --card:#141414;
+  --text:#fff;
+  --muted:#b5b5b5;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Inter,system-ui,sans-serif;
+}
+
+.app{padding:16px;max-width:520px;margin:auto}
+
+/* HEADER */
+
+.header{text-align:center;margin-bottom:24px}
+.bpm .value{font-size:3rem;color:var(--accent);font-weight:600}
+
+/* START BUTTON */
+
+.start-wrap{width:260px;height:260px;margin:24px auto;position:relative}
+svg{transform:rotate(-90deg)}
+.start-btn{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:2.2rem;cursor:pointer;
+}
+
+/* SECTIONS */
+
+.section{
+  background:linear-gradient(180deg,#1a1a1a,#0f0f0f);
+  border-radius:14px;padding:16px;margin-bottom:16px;
+}
+
+.section-title{
+  font-size:.7rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--accent);margin-bottom:14px
+}
+
+label{font-size:.75rem;color:var(--muted);display:block;margin-bottom:6px}
+
+input{
+  width:100%;background:#0b0b0b;
+  border:1px solid rgba(238,155,25,.35);
+  border-radius:10px;padding:12px;color:#fff
+}
+
+/* TIME UNIT SELECTOR */
+
+.units{
+  display:flex;gap:10px;justify-content:space-between
+}
+.unit{
+  flex:1;
+  border:1px solid rgba(238,155,25,.35);
+  border-radius:10px;
+  text-align:center;
+  padding:10px;
+  cursor:pointer;
+}
+.unit.active{
+  background:rgba(238,155,25,.2);
+  border-color:var(--accent)
+}
+
+.version{text-align:center;font-size:.65rem;color:#666}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<div class="header">
+  <h1>Metrônomo Progressivo</h1>
+  <div class="bpm">
+    <div class="value" id="bpmDisplay">80</div>
+    <div>BPM</div>
+  </div>
+</div>
+
+<div class="start-wrap">
+  <svg width="260" height="260">
+    <circle cx="130" cy="130" r="115" stroke="#1c1c1c" stroke-width="10" fill="none"/>
+    <circle id="ring" cx="130" cy="130" r="115"
+      stroke="var(--accent)" stroke-width="10" fill="none"
+      stroke-dasharray="722" stroke-dashoffset="722"/>
+  </svg>
+  <div class="start-btn" id="toggle">Start</div>
+</div>
+
+<div class="section">
+  <div class="section-title">Tempo</div>
+  <label>Inicial</label><input id="bpmStart" value="80">
+  <label>Máximo</label><input id="bpmMax" value="160">
+  <label>Aumento</label><input id="bpmStep" value="10">
+</div>
+
+<div class="section">
+  <div class="section-title">Compasso</div>
+  <label>Tempos por compasso</label>
+  <input id="beatsPerBar" value="4">
+</div>
+
+<div class="section">
+  <div class="section-title">Unidade de Tempo</div>
+  <div class="units" id="units">
+    <div class="unit active" data-factor="1">♩</div>
+    <div class="unit" data-factor="0.5">♪</div>
+    <div class="unit" data-factor="0.25">♬</div>
+    <div class="unit" data-factor="0.125">♭</div>
+  </div>
+</div>
+
+<div class="version">v1.2.1 · scheduler corrigido</div>
+
+</div>
+
+<script>
+const ctx=new (window.AudioContext||window.webkitAudioContext)();
+let strongBuf, weakBuf;
+let bpm, next=0, beat=0, playing=false, timer;
+let unitFactor=1;
+
+const ring=document.getElementById("ring");
+const bpmDisplay=document.getElementById("bpmDisplay");
+
+async function load(url){
+  const r=await fetch(url);
+  return ctx.decodeAudioData(await r.arrayBuffer());
+}
+
+async function initSamples(){
+  strongBuf=await load("https://reinaldoneves.com.br/wp-content/uploads/2026/02/block_forte.mp3");
+  weakBuf=await load("https://reinaldoneves.com.br/wp-content/uploads/2026/02/block_fraco.mp3");
+}
+
+function play(accent){
+  const src=ctx.createBufferSource();
+  src.buffer=accent?strongBuf:weakBuf;
+  src.connect(ctx.destination);
+  src.start();
+}
+
+function tick(){
+  const beats=+beatsPerBar.value;
+  play(beat%beats===0);
+  beat++;
+  ring.style.strokeDashoffset=722-(722*((beat%beats)/beats));
+}
+
+function sched(){
+  const interval=(60/bpm)*unitFactor;
+  while(next<ctx.currentTime+.1){
+    tick();
+    next+=interval;
+  }
+}
+
+toggle.onclick=async()=>{
+  if(!playing){
+    await ctx.resume();
+    if(!strongBuf) await initSamples();
+    bpm=+bpmStart.value;
+    bpmDisplay.textContent=bpm;
+    beat=0;next=ctx.currentTime;
+    timer=setInterval(sched,25);
+    toggle.textContent="Stop";
+    playing=true;
+  }else{
+    clearInterval(timer);
+    ring.style.strokeDashoffset=722;
+    toggle.textContent="Start";
+    playing=false;
+  }
+};
+
+document.querySelectorAll(".unit").forEach(u=>{
+  u.onclick=()=>{
+    document.querySelectorAll(".unit").forEach(x=>x.classList.remove("active"));        
+    u.classList.add("active");
+    unitFactor=parseFloat(u.dataset.factor);    
+  }
+});
+</script>
+
+</body>
+</html>
