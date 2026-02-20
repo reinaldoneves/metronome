@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Metrônomo Progressivo</title>
-
-
-<!-- Structured Data (JSON-LD) - WebApplication -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -28,7 +25,6 @@
   }
 }
 </script>
-
 <style>
 :root{
   --accent:#EE9B19;
@@ -44,141 +40,68 @@ body{
   font-family:Inter,system-ui,sans-serif;
 }
 .app{padding:16px;max-width:520px;margin:auto}
-.header{text-align:center;margin-bottom:24px}
-.bpm .value{font-size:3rem;color:var(--accent);font-weight:600}
-.start-wrap{width:260px;height:260px;margin:24px auto;position:relative}
-svg{transform:rotate(-90deg)}
+.header{
+  text-align:center;
+  margin-bottom:24px;
+}
+.header h1{
+  font-size:2rem;
+  font-weight:400;
+  margin-bottom:8px;
+}
+.start-wrap{
+  width:260px;
+  height:260px;
+  margin:24px auto;
+  position:relative;
+}
+svg{
+  transform:rotate(-90deg);
+}
 .start-btn{
-  position:absolute;inset:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:2.2rem;cursor:pointer;
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  font-size:2.2rem;
+  cursor:pointer;
   border-radius:50%;
   transition:box-shadow .08s ease;
+  line-height:1.2;
+}
+.start-btn .bpm-number{
+  font-size:3rem;
+  color:var(--accent);
+  font-weight:600;
+  background:transparent;
+  border:none;
+  text-align:center;
+  width:100%;
+  outline:none;
+  cursor:text;
+}
+.start-btn .play-icon{
+  font-size:5rem;
+  color:var(--accent);
+  opacity:0.9;
+  margin-top:4px;
 }
 .start-btn.pulse-strong{
   box-shadow:
     0 0 70px rgba(238, 25, 25, 0.95),
-    0 0 120px rgba(238,155,25,.55);
+    0 0 120px rgba(238, 103, 25, 0.55);
 }
 .start-btn.pulse-weak{
   box-shadow:
     0 0 26px rgba(238,155,25,.55),
     0 0 48px rgba(238,155,25,.25);
 }
-.time-signature{
-  text-align:center;
-  margin-top:16px;
-  margin-bottom:8px;
-  font-size:1.4rem;
-  font-weight:600;
-  color:var(--accent);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-}
-.time-signature .label{
-  font-size:0.9rem;
-  color:var(--muted);
-  font-weight:normal;
-}
-#timeSignatureDisplay{
-  background:rgba(238,155,25,.1);
-  padding:6px 16px;
-  border-radius:30px;
-  border:1px solid rgba(238,155,25,.3);
-  display:inline-block;
-}
-.section{
-  background:linear-gradient(180deg,#1a1a1a,#0f0f0f);
-  border-radius:14px;padding:16px;margin-bottom:16px;
-}
-.section-title{
-  font-size:.7rem;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--accent);margin-bottom:14px
-}
-/* Aumentando fonte dos labels dos sliders na seção Tempo */
-.section .slider-row label{
-  font-size:0.9rem; /* antes 0.75rem */
-  margin-bottom:8px; /* ajuste fino */
-}
-.section .slider-row .slider-value{
-  font-size:0.85rem; /* antes 0.75rem */
-  padding:4px 10px; /* um pouco mais espaçoso */
-}
-label{
-  font-size:.75rem;
-  color:var(--muted);
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:6px;
-}
-.label-text{ color:var(--muted); }
-.slider-value{
-  background:rgba(238,155,25,.15);
-  padding:2px 8px;
-  border-radius:12px;
-  font-size:.75rem;
-  color:var(--accent);
-  font-weight:600;
-  border:1px solid rgba(238,155,25,.3);
-}
-input[type=range]{
-  -webkit-appearance:none;
-  width:100%;
-  height:6px;
-  border-radius:6px;
-  background:linear-gradient(90deg,#3a2a10,#a96b18,#3a2a10);
-  outline:none;
-  margin-bottom:14px;
-}
-input[type=range]::-webkit-slider-thumb{
-  -webkit-appearance:none;
-  width:22px;height:22px;
-  border-radius:50%;
-  background:radial-gradient(circle at 30% 30%,#ffd27d,#b87418);
-  border:1px solid #6b3e0f;
-  box-shadow:0 2px 6px rgba(0,0,0,.6);
-  cursor:pointer;
-}
-input[type=range]::-moz-range-thumb{
-  width:22px;height:22px;
-  border-radius:50%;
-  background:#c9821c;
-  border:1px solid #6b3e0f;
-}
-input[type=text]{
-  width:100%;
-  background:#0b0b0b;
-  border:1px solid rgba(238,155,25,.35);
-  border-radius:10px;
-  padding:12px;
-  color:#fff;
-}
-.units,.presets{display:flex;gap:10px;flex-wrap:wrap}
-.unit,.preset, .progression-toggle{
-  flex:1 1 80px;
-  border:1px solid rgba(238,155,25,.35);
-  border-radius:10px;
-  text-align:center;
-  padding:10px;
-  cursor:pointer;
-  font-size:.85rem;
-  transition:all 0.1s ease;
-}
-.unit.active,.preset:hover, .progression-toggle.active{
-  background:rgba(238,155,25,.2);
-  border-color:var(--accent);
-}
-.range input{width:100%}
-.version{text-align:center;font-size:.65rem;color:#666;margin-top:8px}
-.version h3{display:inline;font-size:.65rem;color:var(--accent);margin:0}
 .tap-center{
   display:flex;
   justify-content:center;
-  margin-bottom:24px;
-  margin-top:8px;
+  margin:16px 0;
 }
 .tap-btn{
   width:64px;
@@ -194,7 +117,6 @@ input[type=text]{
   justify-content:center;
   cursor:pointer;
   transition:all 0.15s ease;
-  flex-shrink:0;
   padding:0;
   line-height:1;
   text-transform:uppercase;
@@ -211,6 +133,203 @@ input[type=text]{
   background:rgba(238,155,25,.4);
   transform:scale(0.95);
   box-shadow:0 0 30px rgba(238,155,25,.6);
+}
+.info-row{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  margin:16px 0 8px;
+}
+.time-signature{
+  display:flex;
+  gap:8px;
+  background:rgba(238,155,25,.1);
+  padding:6px 16px;
+  border-radius:30px;
+  border:1px solid rgba(238,155,25,.3);
+  font-size:1.1rem;
+  cursor:pointer;
+  transition:all 0.2s ease;
+}
+.time-signature:hover{
+  background:rgba(238,155,25,.2);
+  border-color:var(--accent);
+}
+.time-signature .label{
+  color:var(--muted);
+  font-weight:normal;
+}
+#timeSignatureDisplay{
+  color:var(--accent);
+  font-weight:600;
+  min-width:80px;
+  text-align:center;
+}
+.section{
+  background:linear-gradient(180deg,#1a1a1a,#0f0f0f);
+  border-radius:14px;padding:16px;margin-bottom:16px;
+  transition:box-shadow 0.3s ease;
+}
+.section.highlight{
+  box-shadow:0 0 0 2px var(--accent), 0 0 20px rgba(238,155,25,.5);
+}
+.section-title{
+  font-size:.7rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--accent);margin-bottom:14px
+}
+label{
+  font-size:.9rem;
+  color:var(--muted);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:8px;
+  cursor:pointer;
+}
+.label-text{ color:var(--muted); }
+.value-badge{
+  background:rgba(238,155,25,.15);
+  padding:6px 16px;
+  border-radius:30px;
+  font-size:1.2rem;
+  color:var(--accent);
+  font-weight:600;
+  border:1px solid rgba(238,155,25,.3);
+  min-width:70px;
+  text-align:center;
+  outline:none;
+}
+.step-buttons{
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  margin:12px 0 8px;
+}
+.step-btn{
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  border:2px solid rgba(238,155,25,.5);
+  background:rgba(238,155,25,.1);
+  color:var(--accent);
+  font-size:1.2rem;
+  font-weight:bold;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:all 0.15s ease;
+  padding:0;
+  line-height:1;
+  box-shadow:0 0 10px rgba(238,155,25,.2);
+}
+.step-btn:hover{
+  background:rgba(238,155,25,.2);
+  border-color:var(--accent);
+  transform:scale(1.08);
+  box-shadow:0 0 20px rgba(238,155,25,.4);
+}
+.step-btn:active{
+  background:rgba(238,155,25,.4);
+  transform:scale(0.95);
+  box-shadow:0 0 25px rgba(238,155,25,.6);
+}
+.units{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:16px;
+}
+.unit{
+  flex:1 1 80px;
+  border:1px solid rgba(238,155,25,.35);
+  border-radius:10px;
+  text-align:center;
+  padding:10px;
+  cursor:pointer;
+  font-size: xx-large;
+  transition:all 0.1s ease;
+}
+.unit.active{
+  background:rgba(238,155,25,.2);
+  border-color:var(--accent);
+}
+.presets{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.preset, .progression-toggle{
+  flex:1 1 80px;
+  border:1px solid rgba(238,155,25,.35);
+  border-radius:10px;
+  text-align:center;
+  padding:10px;
+  cursor:pointer;
+  font-size:.85rem;
+  transition:all 0.1s ease;
+}
+.preset:hover, .progression-toggle.active{
+  background:rgba(238,155,25,.2);
+  border-color:var(--accent);
+}
+
+.pix-btn{
+  display:inline-block;
+  width:100%;
+  padding:16px 20px;
+  background:rgba(238,155,25,.1);
+  border:2px solid var(--accent);
+  border-radius:40px;
+  color:var(--accent);
+  font-size:1.0rem;
+  font-weight:bold;
+  text-align:center;
+  cursor:pointer;
+  transition:all 0.15s ease;
+  text-decoration:none;
+  box-shadow:0 0 15px rgba(238,155,25,.2);
+  margin-bottom:16px;
+}
+.pix-btn:hover{
+  background:rgba(238,155,25,.2);
+  transform:scale(1.02);
+  box-shadow:0 0 25px rgba(238,155,25,.4);
+}
+.pix-btn:active{
+  background:rgba(238,155,25,.4);
+  transform:scale(0.98);
+}
+.pix-message{
+  text-align:center;
+  font-size:.9rem;
+  color:var(--accent);
+  margin-top:8px;
+  min-height:24px;
+}
+.range input{
+  width:100%;
+  height:6px;
+  border-radius:6px;
+  background:linear-gradient(90deg,#3a2a10,#a96b18,#3a2a10);
+  outline:none;
+  -webkit-appearance:none;
+  margin-bottom:14px;
+}
+.range input::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:22px;height:22px;
+  border-radius:50%;
+  background:radial-gradient(circle at 30% 30%,#ffd27d,#b87418);
+  border:1px solid #6b3e0f;
+  box-shadow:0 2px 6px rgba(0,0,0,.6);
+  cursor:pointer;
+}
+.range input::-moz-range-thumb{
+  width:22px;height:22px;
+  border-radius:50%;
+  background:#c9821c;
+  border:1px solid #6b3e0f;
 }
 .shortcuts{
   display:flex;
@@ -232,51 +351,25 @@ input[type=text]{
   font-weight:600;
   margin-left:4px;
 }
-.mobile-bpm-buttons{
-  display:none;
-  justify-content:center;
-  gap:20px;
-  margin-top:10px;
-  margin-bottom:5px;
+.version{
+  text-align:center;
+  font-size:.65rem;
+  color:#666;
+  margin-top:8px;
 }
-.mobile-bpm-btn{
-  width:50px;
-  height:50px;
-  border-radius:50%;
-  border:2px solid var(--accent);
-  background:rgba(238,155,25,.1);
+.version h3{
+  display:inline;
+  font-size:.65rem;
   color:var(--accent);
-  font-size:1.3rem;
-  font-weight:bold;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  transition:all 0.1s ease;
-}
-.mobile-bpm-btn:active{
-  background:rgba(238,155,25,.4);
-  transform:scale(0.9);
-}
-@media (max-width:600px){
-  .mobile-bpm-buttons{
-    display:flex;
-  }
+  margin:0;
 }
 </style>
 </head>
-
 <body>
 <div class="app">
-
 <div class="header">
   <h1>Metrônomo Progressivo</h1>
-  <div class="bpm">
-    <div class="value" id="bpmDisplay">80</div>
-    <div>BPM</div>
-  </div>
 </div>
-
 <div class="start-wrap">
   <svg width="260" height="260">
     <circle cx="130" cy="130" r="115" stroke="#1c1c1c" stroke-width="10" fill="none"/>
@@ -284,14 +377,20 @@ input[type=text]{
       stroke="var(--accent)" stroke-width="10" fill="none"
       stroke-dasharray="722" stroke-dashoffset="722"/>
   </svg>
-  <div class="start-btn" id="toggle">Start</div>
+  <div class="start-btn" id="toggle">
+    <div class="bpm-number" id="bpmDisplay" contenteditable="true" inputmode="numeric">80</div>
+    <div class="play-icon" id="playIcon">▶</div>
+  </div>
 </div>
-
-<div class="time-signature">
-  <span class="label">Compasso</span>
-  <span id="timeSignatureDisplay">4/4 ♩</span>
+<div class="tap-center">
+  <div id="tapBtn" class="tap-btn">Tap</div>
 </div>
-
+<div class="info-row">
+  <div class="time-signature" id="timeSignatureClick">
+    <span class="label">Compasso</span>
+    <span id="timeSignatureDisplay">4/4 ♩</span>
+  </div>
+</div>
 <div class="section">
   <div class="section-title">Presets de Treino</div>
   <div class="presets">
@@ -301,105 +400,109 @@ input[type=text]{
     <div class="preset" data-preset="steady">Estável</div>
   </div>
 </div>
-
 <div class="section">
   <div class="section-title">Tempo</div>
-
-  <div class="tap-center">
-    <div id="tapBtn" class="tap-btn">Tap</div>
+  <label for="bpmStart">
+    <span class="label-text">Inicial</span>
+    <span class="value-badge" id="bpmStartVal" contenteditable="true" inputmode="numeric">80</span>
+  </label>
+  <div class="step-buttons">
+    <button class="step-btn" data-target="bpmStart" data-step="-5">-5</button>
+    <button class="step-btn" data-target="bpmStart" data-step="-1">-1</button>
+    <button class="step-btn" data-target="bpmStart" data-step="+1">+1</button>
+    <button class="step-btn" data-target="bpmStart" data-step="+5">+5</button>
   </div>
-
-  <div class="mobile-bpm-buttons">
-    <div class="mobile-bpm-btn" id="bpmDown">−5</div>
-    <div class="mobile-bpm-btn" id="bpmUp">+5</div>
+  <input type="hidden" id="bpmStart" value="80" min="30" max="300" step="1">
+  <label for="bpmMax">
+    <span class="label-text">Máximo / Mínimo</span>
+    <span class="value-badge" id="bpmMaxVal" contenteditable="true" inputmode="numeric">160</span>
+  </label>
+  <div class="step-buttons">
+    <button class="step-btn" data-target="bpmMax" data-step="-5">-5</button>
+    <button class="step-btn" data-target="bpmMax" data-step="-1">-1</button>
+    <button class="step-btn" data-target="bpmMax" data-step="+1">+1</button>
+    <button class="step-btn" data-target="bpmMax" data-step="+5">+5</button>
   </div>
-
-  <div class="slider-row">
-    <label>
-      <span class="label-text">Inicial</span>
-      <span class="slider-value" id="bpmStartVal">80</span>
-    </label>
-    <input id="bpmStart" type="range" min="30" max="300" step="1" value="80">
+  <input type="hidden" id="bpmMax" value="160" min="30" max="300" step="1">
+  <label for="bpmStep">
+    <span class="label-text">Variação</span>
+    <span class="value-badge" id="bpmStepVal" contenteditable="true" inputmode="numeric">10</span>
+  </label>
+  <div class="step-buttons">
+    <button class="step-btn" data-target="bpmStep" data-step="-5">-5</button>
+    <button class="step-btn" data-target="bpmStep" data-step="-1">-1</button>
+    <button class="step-btn" data-target="bpmStep" data-step="+1">+1</button>
+    <button class="step-btn" data-target="bpmStep" data-step="+5">+5</button>
   </div>
-
-  <div class="slider-row">
-    <label>
-      <span class="label-text">Máximo / Mínimo</span>
-      <span class="slider-value" id="bpmMaxVal">160</span>
-    </label>
-    <input id="bpmMax" type="range" min="30" max="300" step="1" value="160">
+  <input type="hidden" id="bpmStep" value="10" min="5" max="50" step="1">
+  <label for="bpmEveryBars">
+    <span class="label-text">A cada quantos compassos</span>
+    <span class="value-badge" id="bpmEveryBarsVal" contenteditable="true" inputmode="numeric">4</span>
+  </label>
+  <div class="step-buttons">
+    <button class="step-btn" data-target="bpmEveryBars" data-step="-4">-4</button>
+    <button class="step-btn" data-target="bpmEveryBars" data-step="-1">-1</button>
+    <button class="step-btn" data-target="bpmEveryBars" data-step="+1">+1</button>
+    <button class="step-btn" data-target="bpmEveryBars" data-step="+4">+4</button>
   </div>
-
-  <div class="slider-row">
-    <label>
-      <span class="label-text">Variação</span>
-      <span class="slider-value" id="bpmStepVal">10</span>
-    </label>
-    <input id="bpmStep" type="range" min="5" max="50" step="1" value="10">
-  </div>
-
-  <div class="slider-row">
-    <label>
-      <span class="label-text">A cada quantos compassos</span>
-      <span class="slider-value" id="bpmEveryBarsVal">4</span>
-    </label>
-    <input id="bpmEveryBars" type="range" min="1" max="64" step="1" value="4">
-  </div>
-
+  <input type="hidden" id="bpmEveryBars" value="4" min="1" max="64" step="1">
   <div style="margin-top:16px;">
     <div class="section-title">Progressão Automática</div>
     <div id="progressionToggle" class="progression-toggle active">Progressão: ON</div>
   </div>
 </div>
-
-<div class="section">
-  <div class="section-title">Compasso</div>
-  <label>
+<div class="section" id="compassoSection">
+  <div class="section-title">Compasso e Unidade</div>
+  <label for="beatsPerBar">
     <span class="label-text">Tempos por compasso</span>
-    <span class="slider-value" id="beatsPerBarVal">4</span>
+    <span class="value-badge" id="beatsPerBarVal" contenteditable="true" inputmode="numeric">4</span>
   </label>
-  <input id="beatsPerBar" type="range" min="1" max="24" step="1" value="4">
-</div>
-
-<div class="section">
-  <div class="section-title">Unidade de Tempo</div>
+  <div class="step-buttons">
+    <button class="step-btn" data-target="beatsPerBar" data-step="-1">-1</button>
+    <button class="step-btn" data-target="beatsPerBar" data-step="+1">+1</button>
+  </div>
+  <span class="label-text">Unidade de tempo</span>
+  <input type="hidden" id="beatsPerBar" value="4" min="1" max="24" step="1">
   <div class="units">
     <div class="unit active" data-factor="1">♩</div>
     <div class="unit" data-factor="0.5">♪</div>
-    <div class="unit" data-factor="0.25">♬</div>
-    <div class="unit" data-factor="0.125">♬♬</div>
+    <div class="unit" data-factor="0.25">𝅘𝅥𝅯</div>
+    <div class="unit" data-factor="0.125">𝅘𝅥𝅰</div>
     <div class="unit" data-factor="1.5">♩.</div>
     <div class="unit" data-factor="0.75">♪.</div>
-    <div class="unit" data-factor="0.375">♬.</div>
+    <div class="unit" data-factor="0.375">𝅘𝅥𝅯.</div>
+  </div>
+</div>
+<div class="section">
+  <div class="section-title">Mixer</div>
+  <label for="masterGain">
+    <span class="label-text">Volume Geral</span>
+    <span class="value-badge" id="masterGainVal">8.0</span>
+  </label>
+  <div class="range">
+    <input id="masterGain" type="range" min="0" max="12" step="0.1" value="8.0">
+  </div>
+  <label for="accentGain">
+    <span class="label-text">Tempo Forte</span>
+    <span class="value-badge" id="accentGainVal">6.0</span>
+  </label>
+  <div class="range">
+    <input id="accentGain" type="range" min="0" max="12" step="0.1" value="6.0">
+  </div>
+  <label for="normalGain">
+    <span class="label-text">Tempo Fraco</span>
+    <span class="value-badge" id="normalGainVal">5.0</span>
+  </label>
+  <div class="range">
+    <input id="normalGain" type="range" min="0" max="12" step="0.1" value="5.0">
   </div>
 </div>
 
-<div class="section">
-  <div class="section-title">Mixer</div>
-  
-  <div class="slider-row">
-    <label>
-      <span class="label-text">Volume Geral</span>
-      <span class="slider-value" id="masterGainVal">6.0</span>
-    </label>
-    <div class="range"><input id="masterGain" type="range" min="0" max="12" step="0.1" value="6.0"></div>
+<div style="text-align:center;">
+  <div class="pix-btn" id="pixButton">
+    🧡 Gostou do App? Apoie com PIX
   </div>
-
-  <div class="slider-row">
-    <label>
-      <span class="label-text">Tempo Forte</span>
-      <span class="slider-value" id="accentGainVal">6.0</span>
-    </label>
-    <div class="range"><input id="accentGain" type="range" min="0" max="12" step="0.1" value="6.0"></div>
-  </div>
-
-  <div class="slider-row">
-    <label>
-      <span class="label-text">Tempo Fraco</span>
-      <span class="slider-value" id="normalGainVal">6.0</span>
-    </label>
-    <div class="range"><input id="normalGain" type="range" min="0" max="12" step="0.1" value="6.0"></div>
-  </div>
+  <div id="pixMessage" class="pix-message"></div>
 </div>
 
 <div class="shortcuts">
@@ -407,25 +510,21 @@ input[type=text]{
   <span>↑ <span class="shortcut-key">+5 BPM</span></span>
   <span>↓ <span class="shortcut-key">-5 BPM</span></span>
 </div>
-
-<div class="version">v2.19.0 · <h3>Profº Reinaldo Neves</h3> · fontes maiores nos sliders de tempo</div>
+<div class="version">v3.3.0 · <h3>Profº Reinaldo Neves</h3> · Proteção contra anúncios + foco no botão principal</div>
 </div>
-
 <script>
 const bpmDisplay = document.getElementById('bpmDisplay');
+const playIcon = document.getElementById('playIcon');
 const ring = document.getElementById('ring');
 const toggle = document.getElementById('toggle');
-
 const bpmStart = document.getElementById('bpmStart');
 const bpmMax = document.getElementById('bpmMax');
 const bpmStep = document.getElementById('bpmStep');
 const bpmEveryBars = document.getElementById('bpmEveryBars');
 const beatsPerBar = document.getElementById('beatsPerBar');
-
-const masterGainSlider = document.getElementById('masterGain');
-const accentGainSlider = document.getElementById('accentGain');
-const normalGainSlider = document.getElementById('normalGain');
-
+const masterGain = document.getElementById('masterGain');
+const accentGain = document.getElementById('accentGain');
+const normalGain = document.getElementById('normalGain');
 const bpmStartVal = document.getElementById('bpmStartVal');
 const bpmMaxVal = document.getElementById('bpmMaxVal');
 const bpmStepVal = document.getElementById('bpmStepVal');
@@ -434,20 +533,19 @@ const beatsPerBarVal = document.getElementById('beatsPerBarVal');
 const masterGainVal = document.getElementById('masterGainVal');
 const accentGainVal = document.getElementById('accentGainVal');
 const normalGainVal = document.getElementById('normalGainVal');
-
-const progressionToggle = document.getElementById('progressionToggle');
 const timeSignatureDisplay = document.getElementById('timeSignatureDisplay');
+const progressionToggle = document.getElementById('progressionToggle');
 const tapBtn = document.getElementById('tapBtn');
+const compassoSection = document.getElementById('compassoSection');
 
-const bpmUp = document.getElementById('bpmUp');
-const bpmDown = document.getElementById('bpmDown');
+const pixButton = document.getElementById('pixButton');
+const pixMessage = document.getElementById('pixMessage');
 
 let ctx = null;
 let masterGainNode = null;
 let limiter = null;
 let strongBuf = null;
 let weakBuf = null;
-
 let isPlaying = false;
 let bpm = 80;
 let beat = 0;
@@ -455,13 +553,88 @@ let barCount = 0;
 let timer = null;
 let unitFactor = 1;
 let progressionEnabled = true;
-
 const BPM_MIN = 30;
 const BPM_MAX = 300;
-
 let tapTimes = [];
 const MAX_TAPS = 8;
 
+// Chave PIX
+const pixKey = '31151942000102';
+
+function scrollToMainButton() {
+  const startWrap = document.querySelector('.start-wrap');
+  if (startWrap) {
+    startWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    startWrap.classList.add('highlight');
+    setTimeout(() => startWrap.classList.remove('highlight'), 1000);
+  }
+}
+
+const observer = new MutationObserver((mutations) => {
+  mutations.forEach((mutation) => {
+    if (mutation.type === 'childList') {
+      const expectedChildren = ['bpm-number', 'play-icon'];
+      for (let i = toggle.children.length - 1; i >= 0; i--) {
+        const child = toggle.children[i];
+        if (!child.classList.contains('bpm-number') && !child.classList.contains('play-icon')) {
+          child.remove();
+        }
+      }
+    }
+  });
+});
+observer.observe(toggle, { childList: true, subtree: false });
+
+document.getElementById('timeSignatureClick').addEventListener('click', () => {
+  compassoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  compassoSection.classList.add('highlight');
+  setTimeout(() => compassoSection.classList.remove('highlight'), 1000);
+});
+
+// Donation
+pixButton.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(pixKey);
+    pixMessage.textContent = '✅ Chave PIX copiada! (CNPJ: 31151942000102)';
+    setTimeout(() => {
+      pixMessage.textContent = '';
+    }, 3000);
+  } catch (err) {
+    prompt('Copie a chave PIX manualmente:', pixKey);
+    pixMessage.textContent = '⚠️ Use Ctrl+C para copiar';
+    setTimeout(() => {
+      pixMessage.textContent = '';
+    }, 3000);
+  }
+});
+
+function makeEditable(span, inputElement, isFloat = false) {
+  span.addEventListener('blur', () => {
+    let val = parseFloat(span.textContent.replace(',', '.'));
+    if (isNaN(val)) val = parseFloat(inputElement.value);
+    const min = parseFloat(inputElement.min) || 0;
+    const max = parseFloat(inputElement.max) || 100;
+    const step = parseFloat(inputElement.step) || 1;
+    val = Math.min(max, Math.max(min, val));
+    if (!isFloat && step >= 1) val = Math.round(val);
+    else if (step < 1) val = Math.round(val * 10) / 10;
+    span.textContent = val;
+    inputElement.value = val;
+    inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  span.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      span.blur();
+    }
+  });
+}
+makeEditable(bpmStartVal, bpmStart);
+makeEditable(bpmMaxVal, bpmMax);
+makeEditable(bpmStepVal, bpmStep);
+makeEditable(bpmEveryBarsVal, bpmEveryBars);
+makeEditable(beatsPerBarVal, beatsPerBar);
+makeEditable(bpmDisplay, bpmStart);
 function updateBpmFromTap() {
   if (tapTimes.length < 2) return;
   let sum = 0;
@@ -473,12 +646,9 @@ function updateBpmFromTap() {
   newBpm = Math.min(BPM_MAX, Math.max(BPM_MIN, newBpm));
   bpmStart.value = newBpm;
   bpmStartVal.textContent = newBpm;
-  if (!isPlaying) {
-    bpmDisplay.textContent = newBpm;
-  }
+  bpmDisplay.textContent = newBpm;
   restartIfPlaying();
 }
-
 tapBtn.onclick = () => {
   const now = Date.now();
   tapTimes.push(now);
@@ -493,7 +663,6 @@ tapBtn.onclick = () => {
   }, 120);
   updateBpmFromTap();
 };
-
 function restartIfPlaying() {
   if (isPlaying) {
     clearTimeout(timer);
@@ -505,24 +674,16 @@ function restartIfPlaying() {
     loop();
   }
 }
-
 function updateAllSliderValues() {
   bpmStartVal.textContent = bpmStart.value;
   bpmMaxVal.textContent = bpmMax.value;
   bpmStepVal.textContent = bpmStep.value;
   bpmEveryBarsVal.textContent = bpmEveryBars.value;
   beatsPerBarVal.textContent = beatsPerBar.value;
-  masterGainVal.textContent = parseFloat(masterGainSlider.value).toFixed(1);
-  accentGainVal.textContent = parseFloat(accentGainSlider.value).toFixed(1);
-  normalGainVal.textContent = parseFloat(normalGainSlider.value).toFixed(1);
+  masterGainVal.textContent = parseFloat(masterGain.value).toFixed(1);
+  accentGainVal.textContent = parseFloat(accentGain.value).toFixed(1);
+  normalGainVal.textContent = parseFloat(normalGain.value).toFixed(1);
 }
-
-function updateBpmDisplay() {
-  if (!isPlaying) {
-    bpmDisplay.textContent = bpmStart.value;
-  }
-}
-
 function updateTimeSignature() {
   const beats = beatsPerBar.value;
   const activeUnit = document.querySelector('.unit.active');
@@ -539,7 +700,6 @@ function updateTimeSignature() {
   }
   timeSignatureDisplay.textContent = `${beats}/${denominator} ${unitSymbol}`;
 }
-
 function initAudio() {
   if (ctx) return;
   ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -550,19 +710,17 @@ function initAudio() {
   masterGainNode.connect(limiter);
   limiter.connect(ctx.destination);
 }
-
 function sliderToGain(value) {
   return value / 6.0;
 }
-
 function playFallback(accent) {
   if (!ctx) return;
   const osc = ctx.createOscillator();
   const g = ctx.createGain();
   osc.type = "sine";
   osc.frequency.value = accent ? 1200 : 900;
-  const masterGainLinear = sliderToGain(+masterGainSlider.value);
-  const localGainLinear = sliderToGain(accent ? +accentGainSlider.value : +normalGainSlider.value);
+  const masterGainLinear = sliderToGain(+masterGain.value);
+  const localGainLinear = sliderToGain(accent ? +accentGain.value : +normalGain.value);
   const totalGain = masterGainLinear * localGainLinear;
   g.gain.setValueAtTime(0.0001, ctx.currentTime);
   g.gain.exponentialRampToValueAtTime(totalGain, ctx.currentTime + 0.002);
@@ -572,12 +730,11 @@ function playFallback(accent) {
   osc.start();
   osc.stop(ctx.currentTime + 0.05);
 }
-
 function playSample(buf, localSliderValue) {
   if (!ctx || !buf) return playFallback(false);
   const s = ctx.createBufferSource();
   const g = ctx.createGain();
-  const masterGainLinear = sliderToGain(+masterGainSlider.value);
+  const masterGainLinear = sliderToGain(+masterGain.value);
   const localGainLinear = sliderToGain(localSliderValue);
   g.gain.value = masterGainLinear * localGainLinear;
   s.buffer = buf;
@@ -585,17 +742,15 @@ function playSample(buf, localSliderValue) {
   g.connect(masterGainNode);
   s.start();
 }
-
 function click(accent) {
   toggle.classList.remove('pulse-strong', 'pulse-weak');
   const cls = accent ? 'pulse-strong' : 'pulse-weak';
   toggle.classList.add(cls);
   setTimeout(() => toggle.classList.remove(cls), 70);
-  if (accent && strongBuf) playSample(strongBuf, +accentGainSlider.value);
-  else if (!accent && weakBuf) playSample(weakBuf, +normalGainSlider.value);
+  if (accent && strongBuf) playSample(strongBuf, +accentGain.value);
+  else if (!accent && weakBuf) playSample(weakBuf, +normalGain.value);
   else playFallback(accent);
 }
-
 function tick() {
   const beats = +beatsPerBar.value || 4;
   const isAccent = beat % beats === 0;
@@ -615,18 +770,15 @@ function tick() {
     }
   }
 }
-
 function loop() {
   if (!isPlaying) return;
   tick();
   const intervalMs = (60 / bpm) * unitFactor * 1000;
   timer = setTimeout(loop, intervalMs);
 }
-
 function clampBpm(v) {
   return Math.min(BPM_MAX, Math.max(BPM_MIN, v));
 }
-
 async function loadSample(url) {
   try {
     const response = await fetch(url);
@@ -637,7 +789,6 @@ async function loadSample(url) {
     return null;
   }
 }
-
 async function loadAllSamples() {
   if (!ctx) initAudio();
   if (strongBuf && weakBuf) return;
@@ -648,7 +799,6 @@ async function loadAllSamples() {
     loadSample(weakUrl)
   ]);
 }
-
 toggle.onclick = async () => {
   if (!ctx) initAudio();
   await ctx.resume();
@@ -660,23 +810,21 @@ toggle.onclick = async () => {
     barCount = 0;
     ring.style.strokeDashoffset = '722';
     isPlaying = true;
-    toggle.textContent = 'Stop';
+    playIcon.textContent = '⏸';
     loop();
   } else {
     isPlaying = false;
     clearTimeout(timer);
     ring.style.strokeDashoffset = '722';
-    toggle.textContent = 'Start';
+    playIcon.textContent = '▶';
   }
 };
-
 const presets = {
   warmup:   { bpmStart: 55, bpmMax: 90,  bpmStep: 5, bpmEveryBars: 12, beats: 2, unit: 1 },
   speedup:  { bpmStart: 80, bpmMax: 160, bpmStep: 10, bpmEveryBars: 16, beats: 4, unit: 1 },
   control:  { bpmStart: 140, bpmMax: 90, bpmStep: 5, bpmEveryBars: 16, beats: 2, unit: 1 },
   steady:   { bpmStart: 100, bpmMax: 100, bpmStep: 0, bpmEveryBars: 12, beats: 2, unit: 1 }
 };
-
 document.querySelectorAll('.preset').forEach(p => {
   p.onclick = () => {
     const s = presets[p.dataset.preset];
@@ -706,11 +854,9 @@ document.querySelectorAll('.preset').forEach(p => {
     restartIfPlaying();
     if (!isPlaying) {
       bpmDisplay.textContent = s.bpmStart;
-      ring.style.strokeDashoffset = '722';
     }
   };
 });
-
 document.querySelectorAll('.unit').forEach(u => {
   u.onclick = () => {
     document.querySelectorAll('.unit').forEach(x => x.classList.remove('active'));
@@ -718,60 +864,63 @@ document.querySelectorAll('.unit').forEach(u => {
     unitFactor = parseFloat(u.dataset.factor);
     updateTimeSignature();
     restartIfPlaying();
+    scrollToMainButton();
   };
 });
-
 progressionToggle.onclick = () => {
   progressionEnabled = !progressionEnabled;
   progressionToggle.classList.toggle('active', progressionEnabled);
   progressionToggle.textContent = progressionEnabled ? 'Progressão: ON' : 'Progressão: OFF';
 };
-
-function adjustBpm(delta) {
-  let newVal = parseInt(bpmStart.value, 10) + delta;
-  newVal = Math.min(BPM_MAX, Math.max(BPM_MIN, newVal));
-  bpmStart.value = newVal;
-  bpmStartVal.textContent = newVal;
-  if (!isPlaying) bpmDisplay.textContent = newVal;
-  restartIfPlaying();
-  tapTimes = [];
+function adjustInput(inputId, delta) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  let min = parseFloat(input.min) || 0;
+  let max = parseFloat(input.max) || 100;
+  let step = parseFloat(input.step) || 1;
+  let newVal = parseFloat(input.value) + delta;
+  newVal = Math.min(max, Math.max(min, newVal));
+  if (step >= 1) {
+    newVal = Math.round(newVal);
+  } else {
+    newVal = Math.round(newVal * 10) / 10;
+  }
+  input.value = newVal;
+  input.dispatchEvent(new Event('input', { bubbles: true }));
 }
-
-bpmUp.onclick = () => adjustBpm(5);
-bpmDown.onclick = () => adjustBpm(-5);
-
+document.querySelectorAll('.step-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const targetId = btn.dataset.target;
+    const step = parseFloat(btn.dataset.step);
+    adjustInput(targetId, step);
+  });
+});
 bpmStart.addEventListener('input', () => {
   updateAllSliderValues();
-  updateBpmDisplay();
+  bpmDisplay.textContent = bpmStart.value;
   restartIfPlaying();
   tapTimes = [];
 });
-
 bpmMax.addEventListener('input', () => {
   updateAllSliderValues();
   restartIfPlaying();
 });
-
 bpmStep.addEventListener('input', () => {
   updateAllSliderValues();
   restartIfPlaying();
 });
-
 bpmEveryBars.addEventListener('input', () => {
   updateAllSliderValues();
   restartIfPlaying();
 });
-
 beatsPerBar.addEventListener('input', () => {
   updateAllSliderValues();
   updateTimeSignature();
   restartIfPlaying();
 });
-
-masterGainSlider.addEventListener('input', updateAllSliderValues);
-accentGainSlider.addEventListener('input', updateAllSliderValues);
-normalGainSlider.addEventListener('input', updateAllSliderValues);
-
+masterGain.addEventListener('input', updateAllSliderValues);
+accentGain.addEventListener('input', updateAllSliderValues);
+normalGain.addEventListener('input', updateAllSliderValues);
 function handleKeyDown(e) {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
     return;
@@ -783,27 +932,24 @@ function handleKeyDown(e) {
       break;
     case 'ArrowUp':
       e.preventDefault();
-      adjustBpm(5);
+      adjustInput('bpmStart', 5);
       break;
     case 'ArrowDown':
       e.preventDefault();
-      adjustBpm(-5);
+      adjustInput('bpmStart', -5);
       break;
   }
 }
-
 window.addEventListener('keydown', handleKeyDown);
-
 updateAllSliderValues();
-updateBpmDisplay();
 updateTimeSignature();
 ring.style.strokeDashoffset = '722';
-
+bpmDisplay.textContent = bpmStart.value;
+playIcon.textContent = '▶';
 window.addEventListener('load', () => {
   if (!ctx) initAudio();
   loadAllSamples();
 });
 </script>
-
 </body>
 </html>
