@@ -49,12 +49,6 @@ body{
   font-weight:400;
   margin-bottom:8px;
 }
-.top-section{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  width:100%;
-}
 .start-wrap{
   width:260px;
   height:260px;
@@ -88,33 +82,21 @@ svg{
   outline:none;
   cursor:text;
 }
-.start-btn .bpm-text{
-  font-size:0.8rem;
-  color:var(--muted);
-  text-transform:uppercase;
-  letter-spacing:1px;
-  margin-top:-5px;
-  margin-bottom:5px;
-}
 .start-btn .play-icon{
   font-size:5rem;
   color:var(--accent);
   opacity:0.9;
   margin-top:4px;
 }
-@keyframes pulseStrong {
-  0% { box-shadow: 0 0 70px rgba(238,25,25,0.95), 0 0 120px rgba(238,103,25,0.55); }
-  100% { box-shadow: 0 0 0 rgba(238,25,25,0), 0 0 0 rgba(238,103,25,0); }
+.start-btn.pulse-strong{
+  box-shadow:
+    0 0 70px rgba(238, 25, 25, 0.95),
+    0 0 120px rgba(238, 103, 25, 0.55);
 }
-@keyframes pulseWeak {
-  0% { box-shadow: 0 0 26px rgba(238,155,25,0.55), 0 0 48px rgba(238,155,25,0.25); }
-  100% { box-shadow: 0 0 0 rgba(238,155,25,0), 0 0 0 rgba(238,155,25,0); }
-}
-.start-btn.pulse-strong {
-  animation: pulseStrong 0.07s ease;
-}
-.start-btn.pulse-weak {
-  animation: pulseWeak 0.07s ease;
+.start-btn.pulse-weak{
+  box-shadow:
+    0 0 26px rgba(238,155,25,.55),
+    0 0 48px rgba(238,155,25,.25);
 }
 .tap-center{
   display:flex;
@@ -388,32 +370,27 @@ label{
 <div class="header">
   <h1>Metrônomo Progressivo</h1>
 </div>
-
-<div class="top-section">
-  <div class="start-wrap">
-    <svg width="260" height="260">
-      <circle cx="130" cy="130" r="115" stroke="#1c1c1c" stroke-width="10" fill="none"/>
-      <circle id="ring" cx="130" cy="130" r="115"
-        stroke="var(--accent)" stroke-width="10" fill="none"
-        stroke-dasharray="722" stroke-dashoffset="722"/>
-    </svg>
-    <div class="start-btn" id="toggle">
-      <div class="bpm-number" id="bpmDisplay" contenteditable="true" inputmode="numeric">80</div>
-      <span class="bpm-text">bpm</span>
-      <div class="play-icon" id="playIcon">▶</div>
-    </div>
-  </div>
-  <div class="tap-center">
-    <div id="tapBtn" class="tap-btn">Tap</div>
-  </div>
-  <div class="info-row">
-    <div class="time-signature" id="timeSignatureClick">
-      <span class="label">Compasso</span>
-      <span id="timeSignatureDisplay">4/4 ♩</span>
-    </div>
+<div class="start-wrap">
+  <svg width="260" height="260">
+    <circle cx="130" cy="130" r="115" stroke="#1c1c1c" stroke-width="10" fill="none"/>
+    <circle id="ring" cx="130" cy="130" r="115"
+      stroke="var(--accent)" stroke-width="10" fill="none"
+      stroke-dasharray="722" stroke-dashoffset="722"/>
+  </svg>
+  <div class="start-btn" id="toggle">
+    <div class="bpm-number" id="bpmDisplay" contenteditable="true" inputmode="numeric">80</div>
+    <div class="play-icon" id="playIcon">▶</div>
   </div>
 </div>
-
+<div class="tap-center">
+  <div id="tapBtn" class="tap-btn">Tap</div>
+</div>
+<div class="info-row">
+  <div class="time-signature" id="timeSignatureClick">
+    <span class="label">Compasso</span>
+    <span id="timeSignatureDisplay">4/4 ♩</span>
+  </div>
+</div>
 <div class="section">
   <div class="section-title">Presets de Treino</div>
   <div class="presets">
@@ -533,7 +510,7 @@ label{
   <span>↑ <span class="shortcut-key">+5 BPM</span></span>
   <span>↓ <span class="shortcut-key">-5 BPM</span></span>
 </div>
-<div class="version">v3.6.0 · <h3>Profº Reinaldo Neves</h3> · Pulso sincronizado com animação</div>
+<div class="version">v3.3.0 · <h3>Profº Reinaldo Neves</h3> · Proteção contra anúncios + foco no botão principal</div>
 </div>
 <script>
 const bpmDisplay = document.getElementById('bpmDisplay');
@@ -584,39 +561,6 @@ const MAX_TAPS = 8;
 // Chave PIX
 const pixKey = '31151942000102';
 
-const topSection = document.querySelector('.top-section');
-const topObserver = new MutationObserver((mutations) => {
-  mutations.forEach((mutation) => {
-    if (mutation.type === 'childList') {
-      for (let i = topSection.children.length - 1; i >= 0; i--) {
-        const child = topSection.children[i];
-        if (!child.classList.contains('start-wrap') && 
-            !child.classList.contains('tap-center') && 
-            !child.classList.contains('info-row')) {
-          child.remove();
-        }
-      }
-    }
-  });
-});
-topObserver.observe(topSection, { childList: true, subtree: false });
-
-const toggleObserver = new MutationObserver((mutations) => {
-  mutations.forEach((mutation) => {
-    if (mutation.type === 'childList') {
-      const allowedClasses = ['bpm-number', 'play-icon', 'bpm-text'];
-      for (let i = toggle.children.length - 1; i >= 0; i--) {
-        const child = toggle.children[i];
-        const hasAllowedClass = allowedClasses.some(cls => child.classList.contains(cls));
-        if (!hasAllowedClass) {
-          child.remove();
-        }
-      }
-    }
-  });
-});
-toggleObserver.observe(toggle, { childList: true, subtree: false });
-
 function scrollToMainButton() {
   const startWrap = document.querySelector('.start-wrap');
   if (startWrap) {
@@ -625,6 +569,21 @@ function scrollToMainButton() {
     setTimeout(() => startWrap.classList.remove('highlight'), 1000);
   }
 }
+
+const observer = new MutationObserver((mutations) => {
+  mutations.forEach((mutation) => {
+    if (mutation.type === 'childList') {
+      const expectedChildren = ['bpm-number', 'play-icon'];
+      for (let i = toggle.children.length - 1; i >= 0; i--) {
+        const child = toggle.children[i];
+        if (!child.classList.contains('bpm-number') && !child.classList.contains('play-icon')) {
+          child.remove();
+        }
+      }
+    }
+  });
+});
+observer.observe(toggle, { childList: true, subtree: false });
 
 document.getElementById('timeSignatureClick').addEventListener('click', () => {
   compassoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -676,7 +635,6 @@ makeEditable(bpmStepVal, bpmStep);
 makeEditable(bpmEveryBarsVal, bpmEveryBars);
 makeEditable(beatsPerBarVal, beatsPerBar);
 makeEditable(bpmDisplay, bpmStart);
-
 function updateBpmFromTap() {
   if (tapTimes.length < 2) return;
   let sum = 0;
@@ -705,7 +663,6 @@ tapBtn.onclick = () => {
   }, 120);
   updateBpmFromTap();
 };
-
 function restartIfPlaying() {
   if (isPlaying) {
     clearTimeout(timer);
@@ -789,15 +746,11 @@ function click(accent) {
   toggle.classList.remove('pulse-strong', 'pulse-weak');
   const cls = accent ? 'pulse-strong' : 'pulse-weak';
   toggle.classList.add(cls);
+  setTimeout(() => toggle.classList.remove(cls), 70);
   if (accent && strongBuf) playSample(strongBuf, +accentGain.value);
   else if (!accent && weakBuf) playSample(weakBuf, +normalGain.value);
   else playFallback(accent);
 }
-toggle.addEventListener('animationend', (e) => {
-  if (e.target === toggle && (e.animationName === 'pulseStrong' || e.animationName === 'pulseWeak')) {
-    toggle.classList.remove('pulse-strong', 'pulse-weak');
-  }
-});
 function tick() {
   const beats = +beatsPerBar.value || 4;
   const isAccent = beat % beats === 0;
@@ -867,10 +820,10 @@ toggle.onclick = async () => {
   }
 };
 const presets = {
-  warmup:   { bpmStart: 55, bpmMax: 100,  bpmStep: 5, bpmEveryBars: 12, beats: 2, unit: 1 },
+  warmup:   { bpmStart: 55, bpmMax: 90,  bpmStep: 5, bpmEveryBars: 12, beats: 2, unit: 1 },
   speedup:  { bpmStart: 80, bpmMax: 160, bpmStep: 10, bpmEveryBars: 16, beats: 4, unit: 1 },
   control:  { bpmStart: 140, bpmMax: 90, bpmStep: 5, bpmEveryBars: 16, beats: 2, unit: 1 },
-  steady:   { bpmStart: 70, bpmMax: 70, bpmStep: 0, bpmEveryBars: 12, beats: 2, unit: 1 }
+  steady:   { bpmStart: 100, bpmMax: 100, bpmStep: 0, bpmEveryBars: 12, beats: 2, unit: 1 }
 };
 document.querySelectorAll('.preset').forEach(p => {
   p.onclick = () => {
