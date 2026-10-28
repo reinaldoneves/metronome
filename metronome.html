@@ -553,6 +553,17 @@ let barCount = 0;
 let timer = null;
 let unitFactor = 1;
 let progressionEnabled = true;
+
+// ---- Agendamento "lookahead" (elimina a deriva do setTimeout) ----
+// Programar o clique com antecedência direto no relógio do Web Audio
+// (ctx.currentTime), que é amostrado em nível de hardware e não sofre
+// atrasos da main thread nem clamping de timers em background.
+const LOOKAHEAD_MS = 25;   // janela de agendamento do scheduler
+const SCHEDULE_AHEAD = 0.12; // agenda ~120ms à frente
+let nextNoteTime = 0;      // hora do próximo clique, em ctx.currentTime (s)
+let schedTimer = null;     // setInterval do scheduler
+let visualQueue = [];      // [{time, accent}] -> sincroniza a luz com o áudio
+let rafId = null;
 const BPM_MIN = 30;
 const BPM_MAX = 300;
 let tapTimes = [];
@@ -665,13 +676,13 @@ tapBtn.onclick = () => {
 };
 function restartIfPlaying() {
   if (isPlaying) {
-    clearTimeout(timer);
+    stopLoop();
     beat = 0;
     barCount = 0;
     bpm = clampBpm(+bpmStart.value);
     bpmDisplay.textContent = Math.round(bpm);
     ring.style.strokeDashoffset = '722';
-    loop();
+    startLoop();
   }
 }
 function updateAllSliderValues() {
@@ -713,7 +724,7 @@ function initAudio() {
 function sliderToGain(value) {
   return value / 6.0;
 }
-function playFallback(accent) {
+function playFallback(accent, when) {
   if (!ctx) return;
   const osc = ctx.createOscillator();
   const g = ctx.createGain();
@@ -722,16 +733,16 @@ function playFallback(accent) {
   const masterGainLinear = sliderToGain(+masterGain.value);
   const localGainLinear = sliderToGain(accent ? +accentGain.value : +normalGain.value);
   const totalGain = masterGainLinear * localGainLinear;
-  g.gain.setValueAtTime(0.0001, ctx.currentTime);
-  g.gain.exponentialRampToValueAtTime(totalGain, ctx.currentTime + 0.002);
-  g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.04);
+  g.gain.setValueAtTime(0.0001, when);
+  g.gain.exponentialRampToValueAtTime(totalGain, when + 0.002);
+  g.gain.exponentialRampToValueAtTime(0.0001, when + 0.04);
   osc.connect(g);
   g.connect(masterGainNode);
-  osc.start();
-  osc.stop(ctx.currentTime + 0.05);
+  osc.start(when);
+  osc.stop(when + 0.05);
 }
-function playSample(buf, localSliderValue) {
-  if (!ctx || !buf) return playFallback(false);
+function playSample(buf, localSliderValue, when) {
+  if (!ctx || !buf) return playFallback(false, when);
   const s = ctx.createBufferSource();
   const g = ctx.createGain();
   const masterGainLinear = sliderToGain(+masterGain.value);
@@ -740,21 +751,23 @@ function playSample(buf, localSliderValue) {
   s.buffer = buf;
   s.connect(g);
   g.connect(masterGainNode);
-  s.start();
+  s.start(when);
 }
-function click(accent) {
+function flashPulse(accent) {
   toggle.classList.remove('pulse-strong', 'pulse-weak');
   const cls = accent ? 'pulse-strong' : 'pulse-weak';
   toggle.classList.add(cls);
   setTimeout(() => toggle.classList.remove(cls), 70);
-  if (accent && strongBuf) playSample(strongBuf, +accentGain.value);
-  else if (!accent && weakBuf) playSample(weakBuf, +normalGain.value);
-  else playFallback(accent);
 }
-function tick() {
+function tick(when) {
   const beats = +beatsPerBar.value || 4;
   const isAccent = beat % beats === 0;
-  click(isAccent);
+  // Áudio agendado com antecedência no relógio do Web Audio (preciso)
+  if (isAccent && strongBuf) playSample(strongBuf, +accentGain.value, when);
+  else if (!isAccent && weakBuf) playSample(weakBuf, +normalGain.value, when);
+  else playFallback(isAccent, when);
+  // Visual entra numa fila e é exibido no instante exato do clique
+  visualQueue.push({ time: when, accent: isAccent });
   const progress = (beat % beats + 1) / beats;
   ring.style.strokeDashoffset = 722 - (722 * progress);
   beat++;
@@ -770,12 +783,41 @@ function tick() {
     }
   }
 }
-function loop() {
-  if (!isPlaying) return;
-  tick();
-  const intervalMs = (60 / bpm) * unitFactor * 1000;
-  timer = setTimeout(loop, intervalMs);
+// Scheduler estilo "lookahead" (Chris Wilson): roda a cada 25ms e agenda
+// todos os cliques que caem dentro da próxima janela. Os intervalos são
+// calculados a partir do tempo do clique ANTERIOR (nextNoteTime += spb),
+// nunca a partir do "agora". Assim, atrasos do timer da main thread ou
+// throttling em segundo plano NUNCA empurram/encurtam a pulsação —
+// o andamento fica matematicamente estático.
+function secondsPerBeat() {
+  return (60 / bpm) * unitFactor;
 }
+function scheduler() {
+  while (nextNoteTime < ctx.currentTime + SCHEDULE_AHEAD) {
+    tick(nextNoteTime);
+    nextNoteTime += secondsPerBeat();
+  }
+}
+// Desenhar o flash no momento exato em que o clique soa
+function drawVisuals() {
+  rafId = requestAnimationFrame(drawVisuals);
+  while (visualQueue.length && visualQueue[0].time <= ctx.currentTime) {
+    const v = visualQueue.shift();
+    flashPulse(v.accent);
+  }
+}
+function startLoop() {
+  stopLoop();
+  nextNoteTime = ctx.currentTime + 0.06; // pequena latência inicial
+  schedTimer = setInterval(scheduler, LOOKAHEAD_MS);
+  drawVisuals();
+}
+function stopLoop() {
+  if (schedTimer) { clearInterval(schedTimer); schedTimer = null; }
+  if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  visualQueue = [];
+}
+function loop() { /* legado: substituído pelo scheduler lookahead */ }
 function clampBpm(v) {
   return Math.min(BPM_MAX, Math.max(BPM_MIN, v));
 }
@@ -811,10 +853,10 @@ toggle.onclick = async () => {
     ring.style.strokeDashoffset = '722';
     isPlaying = true;
     playIcon.textContent = '⏸';
-    loop();
+    startLoop();
   } else {
     isPlaying = false;
-    clearTimeout(timer);
+    stopLoop();
     ring.style.strokeDashoffset = '722';
     playIcon.textContent = '▶';
   }
