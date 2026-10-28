@@ -68,7 +68,8 @@ svg{
   font-size:2.2rem;
   cursor:pointer;
   border-radius:50%;
-  transition:box-shadow .08s ease;
+  /* Sem transition aqui: a animacao de brilho e feita pela classe
+     .flashing (keyframes), que comeca instantaneamente no frame do clique. */
   line-height:1.2;
 }
 .start-btn .bpm-number{
@@ -88,15 +89,27 @@ svg{
   opacity:0.9;
   margin-top:4px;
 }
-.start-btn.pulse-strong{
-  box-shadow:
-    0 0 70px rgba(238, 25, 25, 0.95),
-    0 0 120px rgba(238, 103, 25, 0.55);
+/* O flash e uma ANIMACAO disparada no instante exato do clique.
+   Animations ignoram transitions: o brilho surge imediatamente no
+   primeiro keyframe (0% = pico) e decai ate 0 — sem "rampa" de 80ms,
+   sem atraso acumulado e sem depender de setTimeout para apagar. */
+@keyframes flash-strong{
+  0%   { box-shadow: 0 0 70px rgba(238,25,25,.95),   0 0 120px rgba(238,103,25,.55); }
+  100% { box-shadow: 0 0 0 rgba(238,25,25,0),        0 0 0 rgba(238,103,25,0); }
 }
-.start-btn.pulse-weak{
-  box-shadow:
-    0 0 26px rgba(238,155,25,.55),
-    0 0 48px rgba(238,155,25,.25);
+@keyframes flash-weak{
+  0%   { box-shadow: 0 0 26px rgba(238,155,25,.55),  0 0 48px rgba(238,155,25,.25); }
+  100% { box-shadow: 0 0 0 rgba(238,155,25,0),       0 0 0 rgba(238,155,25,0); }
+}
+.start-btn.flashing[data-accent="strong"]{
+  animation: flash-strong .16s cubic-bezier(.15,.8,.35,1);
+}
+.start-btn.flashing[data-accent="weak"]{
+  animation: flash-weak .16s cubic-bezier(.15,.8,.35,1);
+}
+@media (prefers-reduced-motion: reduce){
+  .start-btn.flashing[data-accent="strong"]{ animation-duration:.08s; }
+  .start-btn.flashing[data-accent="weak"]{ animation-duration:.08s; }
 }
 .tap-center{
   display:flex;
@@ -753,12 +766,40 @@ function playSample(buf, localSliderValue, when) {
   g.connect(masterGainNode);
   s.start(when);
 }
-function flashPulse(accent) {
-  toggle.classList.remove('pulse-strong', 'pulse-weak');
-  const cls = accent ? 'pulse-strong' : 'pulse-weak';
-  toggle.classList.add(cls);
-  setTimeout(() => toggle.classList.remove(cls), 70);
+// ---- Compensacao de latencia de saida (sync audio/visual) ----
+// ctx.currentTime avanca no relogio do hardware de AUDIO, mas o som so sai
+// pelo alto-falante depois da latencia de saida (outputLatency / render
+// quantum). Se pintassemos o flash no "agora" do currentTime, ele surgiria
+// ANTES do clique audivel — percebido como dessincronia. Medimos essa
+// latencia e adiamos o flash exatamente esse tempo: luz e som no MESMO
+// instante perceptivo. (Sem isso, cada aba/dispositivo tem um offset fixo.)
+let outputLatency = 0;
+function updateOutputLatency() {
+  const L = ctx ? (ctx.outputLatency || ctx.baseLatency || 0) : 0;
+  // teto de seguranca: nunca atrasar mais que meio periodo do beat atual
+  const cap = Math.max(0, secondsPerBeat() * 0.5);
+  outputLatency = Math.min(L, cap);
 }
+// Disparo do flash: feito DIRETO na main thread no instante agendado
+// (setTimeout com timestamp absoluto), sem esperar o poll de 25ms do
+// scheduler nem o proximo requestAnimationFrame — cada ms desses filtros
+// era somado ao atraso visual.
+let flashTimer = null;
+function scheduleFlash(v) {
+  const delayMs = Math.max(0, (v.time + outputLatency - ctx.currentTime) * 1000);
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => flashPulse(v.accent), delayMs);
+}
+function flashPulse(accent) {
+  // Reinicia a animacao do zero: remove a classe, forca reflow, readiciona.
+  toggle.classList.remove('flashing');
+  void toggle.offsetWidth;
+  toggle.dataset.accent = accent ? 'strong' : 'weak';
+  toggle.classList.add('flashing');
+}
+// A animacao se apaga sozinha no fim (sem setTimeout de remocao, que podia
+// ser atrasado pela main thread e "borrar" o pulso).
+toggle.addEventListener('animationend', () => toggle.classList.remove('flashing'));
 function tick(when) {
   const beats = +beatsPerBar.value || 4;
   const isAccent = beat % beats === 0;
@@ -794,27 +835,32 @@ function secondsPerBeat() {
 }
 function scheduler() {
   while (nextNoteTime < ctx.currentTime + SCHEDULE_AHEAD) {
+    updateOutputLatency();          // latencia pode mudar entre buffers
     tick(nextNoteTime);
     nextNoteTime += secondsPerBeat();
   }
 }
-// Desenhar o flash no momento exato em que o clique soa
+// O flash NAO espera o proximo frame do rAF nem o poll de 25ms:
+// agendamos um timer absoluto para acender a luz exatamente no instante
+// audivel do clique (when + outputLatency).
 function drawVisuals() {
   rafId = requestAnimationFrame(drawVisuals);
   while (visualQueue.length && visualQueue[0].time <= ctx.currentTime) {
-    const v = visualQueue.shift();
-    flashPulse(v.accent);
+    scheduleFlash(visualQueue.shift());
   }
 }
 function startLoop() {
   stopLoop();
-  nextNoteTime = ctx.currentTime + 0.06; // pequena latência inicial
+  updateOutputLatency();
+  nextNoteTime = ctx.currentTime + SCHEDULE_AHEAD; // primeiro clique entra na fila com ~120ms de margem, garantindo que o flash seja agendado ANTES de soar (zero atraso)
   schedTimer = setInterval(scheduler, LOOKAHEAD_MS);
   drawVisuals();
 }
 function stopLoop() {
   if (schedTimer) { clearInterval(schedTimer); schedTimer = null; }
   if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  clearTimeout(flashTimer);
+  toggle.classList.remove('flashing');
   visualQueue = [];
 }
 function loop() { /* legado: substituído pelo scheduler lookahead */ }
